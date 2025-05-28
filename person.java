@@ -1,4 +1,11 @@
 import java.util.HashMap;
+import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 public class person {
@@ -10,6 +17,32 @@ public class person {
     private String birthdate;
     private HashMap<Date, Integer> demeritPoints; // A variable that holds the demerit points with the offense day
     private boolean isSuspended;
+
+
+    public void setPersonID(String personID) {
+        this.personID = personID;
+    }
+    
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+    
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+    
+    public void setAddress(String address) {
+        this.address = address;
+    }
+    
+    public void setBirthdate(String birthdate) {
+        this.birthdate = birthdate;
+    }
+    
+    public boolean isSuspended() {
+        return isSuspended;
+    }
+    
 
     public void addPerson() {
 
@@ -50,20 +83,58 @@ public class person {
         return true;
     }
 
-    public String addDemeritPoints()
-    {
-        //TODO: This method adds demerit points for a given person in a TXT file.
-
-        //Condition 1: The format of the date of the offense should follow the following format: DD-MM-YYYY. Example: 15-11-1990
-
-        //Condition 2: The demerit points must be a whole number between 1–6
-
-        //Condition 3: If the person is under 21, the isSuspended variable should be set to true if the total demerit points within two years exceed 6.
-        //If the person is over 21, the isSuspended variable should be set to true if the total demerit points within two years exceed 12.
-
-        //Instruction: If the above conditions and any other conditions you may want to consider are met, the demerit points for a person should be inserted into the TXT file,
-        //and the addDemeritPoints function should return “Success”. Otherwise, the addDemeritPoints function should return “Failed”.
-
-        return "Success";
+    public String addDemeritPoints(String offenseDateStr, int points) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+            sdf.setLenient(false);
+    
+            // Validate offense date
+            Date offenseDate = sdf.parse(offenseDateStr);
+    
+            // Validate points
+            if (points < 1 || points > 6) return "Failed";
+    
+            // Validate and parse birthdate
+            if (birthdate == null) return "Failed";
+            Date birth = sdf.parse(birthdate);
+            Calendar birthCal = Calendar.getInstance();
+            birthCal.setTime(birth);
+    
+            Calendar today = Calendar.getInstance();
+            int age = today.get(Calendar.YEAR) - birthCal.get(Calendar.YEAR);
+            if (today.get(Calendar.DAY_OF_YEAR) < birthCal.get(Calendar.DAY_OF_YEAR)) {
+                age--;
+            }
+    
+            if (age < 0) return "Failed";  // Catch future birthdates
+    
+            // Initialize demeritPoints map if null
+            if (demeritPoints == null) {
+                demeritPoints = new HashMap<>();
+            }
+    
+            // Check total points in the last 2 years
+            int totalPoints = points;
+            Calendar twoYearsAgo = Calendar.getInstance();
+            twoYearsAgo.add(Calendar.YEAR, -2);
+            for (Map.Entry<Date, Integer> entry : demeritPoints.entrySet()) {
+                if (!entry.getKey().before(twoYearsAgo.getTime())) {
+                    totalPoints += entry.getValue();
+                }
+            }
+    
+            // Determine suspension status
+            if ((age < 21 && totalPoints > 6) || (age >= 21 && totalPoints > 12)) {
+                isSuspended = true;
+            }
+    
+            // Add the new offense
+            demeritPoints.put(offenseDate, points);
+    
+            return "Success";
+        } catch (Exception e) {
+            return "Failed";
+        }
     }
+
 }
