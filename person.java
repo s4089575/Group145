@@ -10,9 +10,44 @@ public class person {
     private String birthdate;
     private HashMap<Date, Integer> demeritPoints; // A variable that holds the demerit points with the offense day
     private boolean isSuspended;
+    private static final String DATA_FILE_NAME = "persons.txt";
+    
+ public Person(String personID, String firstName, String lastName, String address, String birthdate) {
+        this.personID = personID;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.address = address;
+        this.birthdate = birthdate;
+        this.demeritPoints = new HashMap<>(); 
+        this.isSuspended = false; 
+    }
+
+    // Getters for the private variables
+    public String getPersonID() {
+         return personID;
+         }
+    public String getFirstName() {
+        return firstName;
+    }
+    public String getLastName() {
+        return lastName;
+    }
+    public String getAddress() {
+        return address;
+    }
+    public String getBirthdate() {
+        return birthdate;
+    }
+    public HashMap<Date, Integer> getDemeritPoints() {
+        return demeritPoints;
+    }
+    public boolean isSuspended() {
+        return isSuspended;
+    }
+
 
     public void addPerson() {
-
+ 
         //TODO: This method adds information about a person to a TXT file.
 
         //Condition 1: personID should be exactly 10 characters long;
