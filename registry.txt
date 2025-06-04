@@ -1,0 +1,89 @@
+import java.io.FileWriter;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+public class person {
+    private String personID;
+    private String firstName;
+    private String lastName;
+    private String address;
+    private String birthdate;
+    private HashMap<Date, Integer> demeritPoints;
+    private boolean isSuspended;
+
+    public void setPersonID(String personID) {
+        this.personID = personID;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public void setBirthdate(String birthdate) {
+        this.birthdate = birthdate;
+    }
+
+    public boolean isSuspended() {
+        return isSuspended;
+    }
+
+    public String addDemeritPoints(String offenseDateStr, int points) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+            sdf.setLenient(false);
+
+            Date offenseDate = sdf.parse(offenseDateStr);
+
+            if (points < 1 || points > 6) return "Failed";
+            if (birthdate == null) return "Failed";
+
+            Date birth = sdf.parse(birthdate);
+            Calendar birthCal = Calendar.getInstance();
+            birthCal.setTime(birth);
+
+            Calendar today = Calendar.getInstance();
+            int age = today.get(Calendar.YEAR) - birthCal.get(Calendar.YEAR);
+            if (today.get(Calendar.DAY_OF_YEAR) < birthCal.get(Calendar.DAY_OF_YEAR)) {
+                age--;
+            }
+
+            if (age < 0) return "Failed";
+
+            if (demeritPoints == null) {
+                demeritPoints = new HashMap<>();
+            }
+
+            int totalPoints = points;
+            Calendar twoYearsAgo = Calendar.getInstance();
+            twoYearsAgo.add(Calendar.YEAR, -2);
+            for (Map.Entry<Date, Integer> entry : demeritPoints.entrySet()) {
+                if (!entry.getKey().before(twoYearsAgo.getTime())) {
+                    totalPoints += entry.getValue();
+                }
+            }
+
+            if ((age < 21 && totalPoints > 6) || (age >= 21 && totalPoints > 12)) {
+                isSuspended = true;
+            }
+
+            demeritPoints.put(offenseDate, points);
+
+            // ✅ Write to TXT file
+            FileWriter fw = new FileWriter("demerit_log.txt", true); // append mode
+            fw.write(personID + "," + offenseDateStr + "," + points + "," + (isSuspended ? "Suspended" : "Active") + "\n");
+            fw.close();
+
+            return "Success";
+        } catch (Exception e) {
+            return "Failed";
+        }
+    }
+}

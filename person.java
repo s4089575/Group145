@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.io.FileWriter;
 import java.util.Map;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -15,7 +16,7 @@ public class person {
     private String lastName;
     private String address;
     private String birthdate;
-    private HashMap<Date, Integer> demeritPoints; // A variable that holds the demerit points with the offense day
+    private HashMap<Date, Integer> demeritPoints; 
     private boolean isSuspended;
 
 
@@ -85,56 +86,47 @@ public class person {
 
     public String addDemeritPoints(String offenseDateStr, int points) {
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-            sdf.setLenient(false);
-    
-            // Validate offense date
-            Date offenseDate = sdf.parse(offenseDateStr);
-    
-            // Validate points
             if (points < 1 || points > 6) return "Failed";
     
-            // Validate and parse birthdate
-            if (birthdate == null) return "Failed";
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+            Date offenseDate = sdf.parse(offenseDateStr);
             Date birth = sdf.parse(birthdate);
-            Calendar birthCal = Calendar.getInstance();
-            birthCal.setTime(birth);
     
-            Calendar today = Calendar.getInstance();
-            int age = today.get(Calendar.YEAR) - birthCal.get(Calendar.YEAR);
-            if (today.get(Calendar.DAY_OF_YEAR) < birthCal.get(Calendar.DAY_OF_YEAR)) {
+            Calendar now = Calendar.getInstance();
+            Calendar bday = Calendar.getInstance();
+            bday.setTime(birth);
+    
+            int age = now.get(Calendar.YEAR) - bday.get(Calendar.YEAR);
+            if (now.get(Calendar.DAY_OF_YEAR) < bday.get(Calendar.DAY_OF_YEAR)) {
                 age--;
             }
+            if (age < 0) return "Failed";
     
-            if (age < 0) return "Failed";  // Catch future birthdates
+            if (demeritPoints == null) demeritPoints = new HashMap<>();
     
-            // Initialize demeritPoints map if null
-            if (demeritPoints == null) {
-                demeritPoints = new HashMap<>();
-            }
+            Calendar limit = Calendar.getInstance();
+            limit.add(Calendar.YEAR, -2);
+            int total = points;
     
-            // Check total points in the last 2 years
-            int totalPoints = points;
-            Calendar twoYearsAgo = Calendar.getInstance();
-            twoYearsAgo.add(Calendar.YEAR, -2);
-            for (Map.Entry<Date, Integer> entry : demeritPoints.entrySet()) {
-                if (!entry.getKey().before(twoYearsAgo.getTime())) {
-                    totalPoints += entry.getValue();
+            for (Date d : demeritPoints.keySet()) {
+                if (!d.before(limit.getTime())) {
+                    total += demeritPoints.get(d);
                 }
             }
     
-            // Determine suspension status
-            if ((age < 21 && totalPoints > 6) || (age >= 21 && totalPoints > 12)) {
+            if ((age < 21 && total > 6) || (age >= 21 && total > 12)) {
                 isSuspended = true;
             }
     
-            // Add the new offense
             demeritPoints.put(offenseDate, points);
     
+            FileWriter fw = new FileWriter("demerit_log.txt", true);
+            fw.write(personID + "," + offenseDateStr + "," + points + "," + (isSuspended ? "Suspended" : "Active") + "\n");
+            fw.close();
+    
             return "Success";
-        } catch (Exception e) {
+        } catch (Exception ex) {
             return "Failed";
         }
     }
-
-}
+}    
