@@ -1,0 +1,4 @@
+15x!_#dAB|Alice|Young|10 Little St|15-06-2010|false|0|
+24k$%_gAC|Bob|Smith|45 Road St|20-10-1995|false|2|
+67m&*pZZ|Tom|Bond|55 Wall St|02-02-1990|false|4|
+87z@!pGH|Jess|Stone|90 Hill St|15-11-2004|false|1
